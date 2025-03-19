@@ -8,3 +8,4 @@ Only alternative is the website version of MyAnimeList but it seems to have it's
 - Look up content based on some filters
 - Fuzzy search incorporated
 - Display details of the searched content
+- Tkinter GUI
