@@ -3,12 +3,16 @@ import tkinter as tk
 import requests
 import json
 from PIL import Image, ImageTk
+import webbrowser
 
 def load_json(filename):
     with open(filename, 'r') as file:    
         return json.load(file)
-
+    
 sample = load_json('sample.json')
+
+def redirect_link(result_url):
+    webbrowser.open(result_url)
 
 root = tk.Tk()
 root.geometry('1100x800') # wxh
@@ -38,6 +42,8 @@ result_score = tk.Label(root, text=f'Score: {sample['data'][0]['score']} / 10.00
 result_synopsis_title = tk.Label(root, text='Synopsis: ', font=('Maven Pro', 18))
 result_synopsis = tk.Label(root, text=f'{sample['data'][0]['synopsis'][:369]}', font=('Maven Pro', 12), wraplength=600)
 read_more = tk.Label(root, text='read more...', font=('Maven Pro', 10), foreground='blue')
+
+read_more.bind("<Button-1>", lambda event: redirect_link(sample['data'][0]['url']))
 
 # widget placement
 
