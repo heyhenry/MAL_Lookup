@@ -4,12 +4,25 @@ import requests
 import json
 from PIL import Image, ImageTk
 import webbrowser
+    
+response = requests.get('https://api.jikan.moe/v4/random/manga?type=manhwa&status=complete&sfw=true')
+data = response.json()
+with open('sample.json', 'w') as outfile:
+    json.dump(data, outfile, indent=4)
 
 def load_json(filename):
     with open(filename, 'r') as file:    
         return json.load(file)
-    
+
 sample = load_json('sample.json')
+
+# usage of wording: 'manga' to encompass all reading forms as MAL does
+def get_random_manga(content_type):
+    global sample
+    api_url = f'https://api.jikan.moe/v4/random/manga?type={content_type}&status=complete'
+    content_request = requests.get(api_url)
+    sample = content_request.json() 
+    print(sample)
 
 def redirect_link(result_url):
     webbrowser.open(result_url)
@@ -29,21 +42,27 @@ manga_button = tk.Button(root, text='Manga', font=('Maven Pro Black', 18))
 manhwa_button = tk.Button(root, text='Manhwa', font=('Maven Pro Black', 18))
 manhua_button = tk.Button(root, text='Manhua', font=('Maven Pro Black', 18))
 
-result_title = tk.Label(root, text=sample['data'][0]['titles'][0]['title'], font=('Maven Pro Black', 24))
-result_img = ImageTk.PhotoImage(Image.open(requests.get(sample['data'][0]['images']['jpg']['image_url'], stream=True).raw).resize((300,400), Image.Resampling.LANCZOS))
+result_title = tk.Label(root, text=sample['data']['titles'][0]['title'], font=('Maven Pro Black', 24))
+result_img = ImageTk.PhotoImage(Image.open(requests.get(sample['data']['images']['jpg']['image_url'], stream=True).raw).resize((300,400), Image.Resampling.LANCZOS))
 result_img_panel = tk.Label(root, image=result_img)
-result_type = tk.Label(root, text=f'Type: {sample['data'][0]['type']}', font=('Maven Pro', 18))
-result_volumes = tk.Label(root, text=f'Volumes: {sample['data'][0]['volumes']}', font=('Maven Pro', 18))
-result_chapters = tk.Label(root, text=f'Chapters: {sample['data'][0]['chapters']}', font=('Maven Pro', 18))
-result_published = tk.Label(root, text=f'Published: {sample['data'][0]['published']['from'][:4]} - {sample['data'][0]['published']['to'][:4]}', font=('Maven Pro', 18))
-result_genres = tk.Label(root, text=f'Genres: {', '.join([genre['name'] for genre in sample['data'][0]['genres'][0:len(sample['data'][0]['genres'])]])}', font=('Maven Pro', 18))
-result_theme = tk.Label(root, text=f'Themes: {', '.join([theme['name'] for theme in sample['data'][0]['themes'][0:len(sample['data'][0]['themes'])]])}', font=('Maven Pro', 18))
-result_score = tk.Label(root, text=f'Score: {sample['data'][0]['score']} / 10.00', font=('Maven Pro', 18))
+result_type = tk.Label(root, text=f'Type: {sample['data']['type']}', font=('Maven Pro', 18))
+result_volumes = tk.Label(root, text=f'Volumes: {sample['data']['volumes']}', font=('Maven Pro', 18))
+result_chapters = tk.Label(root, text=f'Chapters: {sample['data']['chapters']}', font=('Maven Pro', 18))
+published_from = sample['data']['published'].get('from') or 'null'
+published_to = sample['data']['published'].get('to') or 'null'
+from_year = published_from[:4] if published_from != 'null' else 'null'
+to_year = published_to[:4] if published_to != 'null' else 'null'
+result_published = tk.Label(root, text=f'Published: {from_year} - {to_year}', font=('Maven Pro', 18))
+result_genres = tk.Label(root, text=f'Genres: {', '.join([genre['name'] for genre in sample['data']['genres'][0:len(sample['data']['genres'])]])}', font=('Maven Pro', 18))
+result_theme = tk.Label(root, text=f'Themes: {', '.join([theme['name'] for theme in sample['data']['themes'][0:len(sample['data']['themes'])]])}', font=('Maven Pro', 18))
+result_score = tk.Label(root, text=f'Score: {sample['data']['score']} / 10.00', font=('Maven Pro', 18))
 result_synopsis_title = tk.Label(root, text='Synopsis: ', font=('Maven Pro', 18))
-result_synopsis = tk.Label(root, text=f'{sample['data'][0]['synopsis'][:369]}', font=('Maven Pro', 12), wraplength=600)
+content_synopsis = sample['data'].get('synopsis') or 'null'
+content_synopsis = content_synopsis[:369] if content_synopsis != 'null' else 'null'
+result_synopsis = tk.Label(root, text=f'{content_synopsis}', font=('Maven Pro', 12), wraplength=600)
 read_more = tk.Label(root, text='read more...', font=('Maven Pro', 10), foreground='blue')
 
-read_more.bind("<Button-1>", lambda event: redirect_link(sample['data'][0]['url']))
+read_more.bind("<Button-1>", lambda event: redirect_link(sample['data']['url']))
 
 # widget placement
 
